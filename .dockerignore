@@ -1,0 +1,11 @@
+.github/
+.git/
+.history/
+.venv/
+.vscode/
+*.bak
+*.log
+charts/
+Makefile
+private/
+__pycache__

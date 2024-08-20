@@ -1,0 +1,36 @@
+vault:
+  url: ${VAULT_ADDR}
+  token: ${VAULT_TOKEN}
+
+bootstrap:
+  cleanup_after_install: true
+  params:
+    display-name: temporary-bootstrap
+    explicit-max-ttl: 5m
+    renewable: false
+    wrap-ttl: 120s
+    format: table
+    field: wrapping_token
+
+actions: []
+  # - path: sys/policy/test-app-policy
+  #   type: write
+  #   params:
+  #     - k: policy
+  #       v: |
+  #         path "kv/data/test-app/db" {
+  #           capabilities = ["read"]
+  #         }
+
+  #         path "kv/data/test-app/mq" {
+  #           capabilities = ["read"]
+  #         }
+
+  # - path: auth/kubernetes/role/test-app-role
+  #   type: write
+  #   params:
+  #     - { k: bound_service_account_names, v: test-app-service-account }
+  #     - { k: bound_service_account_namespaces, v: test-app-namespace }
+  #     - { k: policies, v: test-app-policy }
+  #     - { k: ttl, v: 1h }
+
