@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "vault-actions.fullname" . }}
+  labels:
+    {{- include "vault-actions.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": {{ .Values.hookConfiguration.hook }}
+    "helm.sh/hook-weight": {{ .Values.hookConfiguration.hookWeight | quote }}
+    "helm.sh/hook-delete-policy": before-hook-creation
+
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vault-actions.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vault-actions.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.devDebug }}
+          command:
+            - sleep
+          args:
+          - infinity
+          {{- else }}
+          args:
+            - -f {{ (include "vault-actions.secretMountPath" .) }}
+          {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: volume-config-app
+              mountPath: {{ include "vault-actions.secretMountPath" . }}
+              subPath: {{ base (include "vault-actions.secretMountPath" .) }}
+              readOnly: true
+      volumes:
+        - name: volume-config-app
+          secret:
+            secretName: {{ include "vault-actions.secretName" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
