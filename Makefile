@@ -2,7 +2,7 @@ POETRY_VERSION:=1.8.3
 
 DOCKER_REGISTRY:=ghcr.io/jr200
 IMAGE_NAME:=vault-actions
-IMAGE_TAG:=latest
+IMAGE_TAG:=local
 
 VAULT_TOKEN ?= ""
 
